@@ -27,5 +27,6 @@ jobs:
           GOOGLE_SERVICE_ACCOUNT: ${{ secrets.GOOGLE_SERVICE_ACCOUNT }}
           SKF_USERNAME: ${{ secrets.SKF_USERNAME }}
           SKF_PASSWORD: ${{ secrets.SKF_PASSWORD }}
+          BASE_URL: ${{ secrets.BASE_URL }}
         run: |
           python acessapi_skf.py
