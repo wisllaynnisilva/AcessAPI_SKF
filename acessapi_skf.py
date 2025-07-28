@@ -10,7 +10,6 @@ Original file is located at
 """
 
 from datetime import datetime, timedelta
-from IPython.display import display
 import pandas as pd
 import requests
 import urllib3
@@ -20,15 +19,22 @@ import jwt
 """# **AUTENTICAÇÃO SHEETS**"""
 
 import gspread
-from google.colab import auth
-from gspread_dataframe import set_with_dataframe, get_as_dataframe
-from google.auth import default
+from google.oauth2.service_account import Credentials
+from gspread_dataframe import set_with_dataframe
 
-# Autentica no Google
-auth.authenticate_user()
+# Lê a variável de ambiente com o conteúdo do JSON da conta de serviço
+service_account_info = json.loads(os.environ["GOOGLE_SERVICE_ACCOUNT"])
 
-# Usar 'default' para obter as credenciais no formato esperado para o gspread
-creds, _ = default()
+# Define os escopos de acesso (Google Sheets)
+SCOPES = [
+    'https://www.googleapis.com/auth/spreadsheets',
+    'https://www.googleapis.com/auth/drive'
+]
+
+# Cria as credenciais usando o conteúdo do secret
+creds = Credentials.from_service_account_info(service_account_info, scopes=SCOPES)
+
+# Autentica no Google Sheets
 gc = gspread.authorize(creds)
 
 """# **DADOS DE ACESSO**"""
@@ -78,16 +84,10 @@ df_path_split.columns = [f"path_{i}" for i in range(df_path_split.shape[1])]
 # Junta com o DataFrame original
 df_machines_split = pd.concat([df_machines, df_path_split], axis=1)
 
-# Exibir resultado
-display(df_machines_split[['id', 'name', 'path'] + df_path_split.columns.tolist()].head(10))
-
 """**TABELA E LISTA MACHINE ID**"""
 
 # Filtra linhas onde path_1 == 'UBU' e já seleciona colunas desejadas
 df_machine = df_machines_split.loc[df_machines_split['path_1'] == 'UBU', ['id', 'name', 'path']].copy()
-
-# Exibe a nova tabela filtrada (prévia)
-display(df_machine.head(100))
 
 # Extrai lista com os IDs dos ativos filtrados
 machine_ids = df_machine['id'].tolist()
@@ -139,9 +139,6 @@ df_point_raw = get_points(token, machine_ids)
 # Seleciona apenas colunas desejadas
 colunas_desejadas = ['ID', 'Name', 'NodeTypeName', 'MachineId']
 df_point = df_point_raw[colunas_desejadas].copy()
-
-# Visualização
-display(df_point.head(10))
 
 """# **LISTA DE PONTOS**"""
 
@@ -220,7 +217,6 @@ token = obter_token()
 df_alarms = get_alarms(token, machine_ids)
 
 print(f"\n Total de pontos coletados: {len(df_alarms)}")
-display(df_alarms.head(10))
 
 """# **PLANILHA ALARMS VALUE**"""
 
@@ -317,7 +313,7 @@ if __name__ == "__main__":
         df_trendMeasurements = df_filtrado[colunas_desejadas].drop_duplicates(subset=colunas_desejadas)
 
         print(f"{len(df_trendMeasurements)} medições após filtro e remoção de duplicados")
-        display(df_trendMeasurements.head(10))
+
     else:
         print("Nenhuma medição retornada.")
 
