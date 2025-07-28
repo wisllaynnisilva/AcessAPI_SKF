@@ -3,3 +3,8 @@ requests
 urllib3
 gspread
 jwt
+gspread
+google-auth
+gspread-dataframe
+oauth2client
+cryptography
