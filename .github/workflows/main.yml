@@ -25,5 +25,7 @@ jobs:
       - name: Executar script
         env:
           GOOGLE_SERVICE_ACCOUNT: ${{ secrets.GOOGLE_SERVICE_ACCOUNT }}
+          SKF_USERNAME: ${{ secrets.SKF_USERNAME }}
+          SKF_PASSWORD: ${{ secrets.SKF_PASSWORD }}
         run: |
           python acessapi_skf.py
