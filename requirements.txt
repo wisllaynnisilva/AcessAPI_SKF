@@ -1,10 +1,10 @@
+PyJWT
 pandas
-requests
 urllib3
+pyspark
 gspread
-jwt
-gspread
+requests
 google-auth
-gspread-dataframe
 oauth2client
 cryptography
+gspread-dataframe
