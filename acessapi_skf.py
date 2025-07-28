@@ -13,6 +13,7 @@ import requests
 import urllib3
 import json
 import jwt
+import os
 
 """# **AUTENTICAÇÃO SHEETS**"""
 
