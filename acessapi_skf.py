@@ -182,8 +182,8 @@ def get_alarms(token, machine_ids):
             for ponto in dados_pontos:
                 registro = {
                     "ID": ponto.get("ID"),
-                    "HighAlarm": "",
-                    "HighWarning": "",
+                    "HighAlarm": None,
+                    "HighWarning": None,
                     "Freq_AlarmLevel": None,
                     "Freq_WarningLevel": None
                 }
@@ -195,9 +195,15 @@ def get_alarms(token, machine_ids):
                     parts = summary.lower().replace(" / ", "/").split("/")
                     for part in parts:
                         if "high alarm" in part:
-                            registro["HighAlarm"] = part.split()[-1]
+                            try:
+                                registro["HighAlarm"] = float(part.split()[-1].replace(",", ""))
+                            except:
+                                registro["HighAlarm"] = None
                         elif "high warning" in part:
-                            registro["HighWarning"] = part.split()[-1]
+                            try:
+                                registro["HighWarning"] = float(part.split()[-1].replace(",", ""))
+                            except:
+                                registro["HighWarning"] = None
 
                 # === Frequencies["Overall"] ===
                 freq_list = ponto.get("Frequencies", [])
@@ -205,7 +211,6 @@ def get_alarms(token, machine_ids):
                 alarm_raw = str(freq_overall.get("AlarmLevel", ""))
                 warning_raw = str(freq_overall.get("WarningLevel", ""))
 
-                # Extrai valor numérico corretamente como float
                 try:
                     registro["Freq_AlarmLevel"] = float(alarm_raw.split()[0].replace(",", ""))
                 except:
@@ -219,6 +224,7 @@ def get_alarms(token, machine_ids):
                 registros.append(registro)
 
     return pd.DataFrame(registros)
+
 
 # === EXECUÇÃO ===
 token = obter_token()
