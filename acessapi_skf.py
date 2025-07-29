@@ -184,8 +184,8 @@ def get_alarms(token, machine_ids):
                     "ID": ponto.get("ID"),
                     "HighAlarm": "",
                     "HighWarning": "",
-                    "Freq_AlarmLevel": "",
-                    "Freq_WarningLevel": ""
+                    "Freq_AlarmLevel": None,
+                    "Freq_WarningLevel": None
                 }
 
                 # === OverallAlarm ===
@@ -205,8 +205,16 @@ def get_alarms(token, machine_ids):
                 alarm_raw = str(freq_overall.get("AlarmLevel", ""))
                 warning_raw = str(freq_overall.get("WarningLevel", ""))
 
-                registro["Freq_AlarmLevel"] = alarm_raw.split()[0] if alarm_raw else ""
-                registro["Freq_WarningLevel"] = warning_raw.split()[0] if warning_raw else ""
+                # Extrai valor numérico corretamente como float
+                try:
+                    registro["Freq_AlarmLevel"] = float(alarm_raw.split()[0].replace(",", ""))
+                except:
+                    registro["Freq_AlarmLevel"] = None
+
+                try:
+                    registro["Freq_WarningLevel"] = float(warning_raw.split()[0].replace(",", ""))
+                except:
+                    registro["Freq_WarningLevel"] = None
 
                 registros.append(registro)
 
@@ -216,7 +224,7 @@ def get_alarms(token, machine_ids):
 token = obter_token()
 df_alarms = get_alarms(token, machine_ids)
 
-print(f"\n Total de pontos coletados: {len(df_alarms)}")
+print(f"\nTotal de pontos coletados: {len(df_alarms)}")
 
 """# **PLANILHA ALARMS VALUE**"""
 
