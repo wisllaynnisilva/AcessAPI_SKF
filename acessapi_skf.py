@@ -114,6 +114,67 @@ set_with_dataframe(aba, df_machine)
 
 print("Dados enviados com sucesso para o Google Sheets!")
 
+"""# **REQUISIÇÃO DE SUBMACHINE ID**"""
+
+# === OBTÉM A ÁRVORE COMPLETA ===
+def obter_arvore_hierarquia(token):
+    url = URLS["submachines"]
+    headers = {
+        "Authorization": f"Bearer {token}",
+        "Accept": "application/json"
+    }
+    response = requests.get(url, headers=headers, verify=False)
+    response.raise_for_status()
+    return response.json()
+
+# === EXTRAÇÃO DAS SUBMACHINES COM PARENT ===
+def get_submachines(data, parent_name=None, submachines=None):
+    if submachines is None:
+        submachines = []
+
+    for node in data:
+        tipo = node.get("typeName")
+        nome = node.get("name")
+        pai = parent_name
+
+        if tipo == "SubMachine":
+            submachines.append({
+                "id": node.get("id"),
+                "name": nome,
+                "description": node.get("description"),
+                "parent": pai
+            })
+
+        filhos = node.get("children")
+        if filhos:
+            get_submachines(filhos, parent_name=nome, submachines=submachines)
+
+    return submachines
+
+# === EXECUÇÃO ===
+token = obter_token()
+data_raw = obter_arvore_hierarquia(token)
+submachines = get_submachines(data_raw)
+df_submachines = pd.DataFrame(submachines)
+
+"""# **PLANILHA SUBMACHINE ID**"""
+
+# Nome da planilha
+planilha_id = "1VstU43--BvFijbTJp9XkQZd0Hz6FS1tawzXKiEyx-q4"
+nome_da_aba = "Sheet1"
+
+# Abre a planilha
+planilha = gc.open_by_key(planilha_id)
+aba = planilha.worksheet(nome_da_aba)
+
+# Limpa a aba antes de escrever os dados
+aba.clear()
+
+# Envia o DataFrame para a aba
+set_with_dataframe(aba, df_submachines)
+
+print("Dados enviados com sucesso para o Google Sheets!")
+
 """# **REQUISIÇÃO DE PONTOS**"""
 
 def get_points(token, machine_ids):
