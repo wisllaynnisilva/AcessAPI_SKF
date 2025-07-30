@@ -44,6 +44,7 @@ BASE_URL = os.getenv("BASE_URL")
 URLS = {
     "token": f"{BASE_URL}/token",
     "machines": f"{BASE_URL}/v1/machines",
+    "submachines": f"{BASE_URL}/v1/hierarchy",
     "points": f"{BASE_URL}/v1/points"
 }
 
