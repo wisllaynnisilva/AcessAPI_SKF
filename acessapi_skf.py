@@ -137,7 +137,7 @@ token = obter_token()
 df_point_raw = get_points(token, machine_ids)
 
 # Seleciona apenas colunas desejadas
-colunas_desejadas = ['ID', 'Name', 'NodeTypeName', 'MachineId']
+colunas_desejadas = ['ID', 'Name', 'NodeTypeName', 'ParentID','MachineId']
 df_point = df_point_raw[colunas_desejadas].copy()
 
 """# **LISTA DE PONTOS**"""
