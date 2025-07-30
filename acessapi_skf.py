@@ -228,10 +228,16 @@ set_with_dataframe(aba, df_point)
 
 print("Dados enviados com sucesso para o Google Sheets!")
 
-"""# **REQUISIÇÃO DE ALARMES**"""
+"""# **REQUISIÇÃO DE ALARMS VALUE**"""
 
 def get_alarms(token, machine_ids):
-    headers = {"Authorization": f"Bearer {token}", "Accept": "application/json"}
+    import requests
+    import pandas as pd
+
+    headers = {
+        "Authorization": f"Bearer {token}",
+        "Accept": "application/json"
+    }
     registros = []
 
     for mid in machine_ids:
@@ -249,7 +255,7 @@ def get_alarms(token, machine_ids):
                     "Freq_WarningLevel": None
                 }
 
-                # === OverallAlarm ===
+                # OverallAlarm
                 overall_alarm = ponto.get("OverallAlarm")
                 summary = overall_alarm.get("Summary", "") if isinstance(overall_alarm, dict) else ""
                 if summary:
@@ -257,35 +263,41 @@ def get_alarms(token, machine_ids):
                     for part in parts:
                         if "high alarm" in part:
                             try:
-                                registro["HighAlarm"] = float(part.split()[-1].replace(",", ""))
+                                val = part.split()[-1].replace(",", ".")
+                                registro["HighAlarm"] = float(val)
                             except:
                                 registro["HighAlarm"] = None
                         elif "high warning" in part:
                             try:
-                                registro["HighWarning"] = float(part.split()[-1].replace(",", ""))
+                                val = part.split()[-1].replace(",", ".")
+                                registro["HighWarning"] = float(val)
                             except:
                                 registro["HighWarning"] = None
 
-                # === Frequencies["Overall"] ===
+                # Frequencies["Overall"]
                 freq_list = ponto.get("Frequencies", [])
                 freq_overall = next((f for f in freq_list if f.get("Frequency") == "Overall"), {})
-                alarm_raw = str(freq_overall.get("AlarmLevel", ""))
-                warning_raw = str(freq_overall.get("WarningLevel", ""))
 
                 try:
-                    registro["Freq_AlarmLevel"] = float(alarm_raw.split()[0].replace(",", ""))
+                    val = str(freq_overall.get("AlarmLevel", "")).split()[0].replace(",", ".")
+                    registro["Freq_AlarmLevel"] = float(val)
                 except:
                     registro["Freq_AlarmLevel"] = None
 
                 try:
-                    registro["Freq_WarningLevel"] = float(warning_raw.split()[0].replace(",", ""))
+                    val = str(freq_overall.get("WarningLevel", "")).split()[0].replace(",", ".")
+                    registro["Freq_WarningLevel"] = float(val)
                 except:
                     registro["Freq_WarningLevel"] = None
 
                 registros.append(registro)
 
-    return pd.DataFrame(registros)
+    df = pd.DataFrame(registros)
+    # Força colunas numéricas para float, evita interpretar como datas
+    for col in ["HighAlarm", "HighWarning", "Freq_AlarmLevel", "Freq_WarningLevel"]:
+        df[col] = pd.to_numeric(df[col], errors='coerce')
 
+    return df
 
 # === EXECUÇÃO ===
 token = obter_token()
