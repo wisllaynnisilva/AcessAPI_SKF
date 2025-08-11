@@ -444,7 +444,7 @@ nome_da_aba = "Sheet1"
 planilha = gc.open_by_key(planilha_id)
 aba = planilha.worksheet(nome_da_aba)
 
-# Lê os dados atuais da aba
+# Lê os dados da aba
 df = get_as_dataframe(aba, evaluate_formulas=True).dropna(how="all")
 
 # Remove duplicatas com base nas colunas chave
