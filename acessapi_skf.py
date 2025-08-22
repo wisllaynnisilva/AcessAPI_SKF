@@ -332,7 +332,7 @@ def consultar_trends(point_ids, token):
         "Accept": "application/json"
     }
 
-    from_date = datetime.now(timezone.utc) - timedelta(days=7)
+    from_date = datetime.now(timezone.utc) - timedelta(hours=1)
     to_date = datetime.now(timezone.utc)
 
     params = {
