@@ -403,7 +403,6 @@ if __name__ == "__main__":
         df_trendMeasurements = df_filtrado[colunas_desejadas].drop_duplicates(subset=colunas_desejadas)
 
         print(f"{len(df_trendMeasurements)} medições após filtro e remoção de duplicados")
-        display(df_trendMeasurements.head(10))
     else:
         print("Nenhuma medição retornada.")
 
