@@ -336,8 +336,8 @@ def consultar_trends(point_ids, token):
     to_date = datetime.now(timezone.utc)
 
     params = {
-        "fromDateUTC": from_date.isoformat() + "Z",
-        "toDateUTC": to_date.isoformat() + "Z"
+        "fromDateUTC": from_date.replace(microsecond=0).isoformat().replace("+00:00", "Z"),
+        "toDateUTC": to_date.replace(microsecond=0).isoformat().replace("+00:00", "Z")
     }
 
     resultados = []
