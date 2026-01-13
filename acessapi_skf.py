@@ -332,8 +332,13 @@ def consultar_trends(point_ids, token):
         "Accept": "application/json"
     }
 
-    from_date = datetime.now(timezone.utc) - timedelta(days=1)
-    to_date = datetime.now(timezone.utc)
+    now_utc = datetime.now(timezone.utc)
+
+    ontem_inicio = (now_utc - timedelta(days=1)).replace(hour=0, minute=0, second=0, microsecond=0)
+    ontem_fim = (now_utc - timedelta(days=1)).replace(hour=23, minute=59, second=59, microsecond=0)
+
+    from_date = ontem_inicio
+    to_date = ontem_fim
 
     params = {
         "fromDateUTC": from_date.replace(microsecond=0).isoformat().replace("+00:00", "Z"),
