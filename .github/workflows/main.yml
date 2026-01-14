@@ -2,7 +2,7 @@ name: Acess_API_SKF
 
 on:
   schedule:
-    - cron: '0 7 * * *'  # Todo dia às 04:00 no Brasil (UTC-3)
+    - cron: '0 4 * * *'  # Todo dia às 01:00 no Brasil (UTC-3)
   workflow_dispatch:
 
 jobs:
