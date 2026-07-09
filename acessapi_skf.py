@@ -425,7 +425,7 @@ aba = planilha.worksheet(nome_da_aba)
 df_existente = get_as_dataframe(aba, evaluate_formulas=True).dropna(how="all")
 
 # Colunas obrigatórias
-colunas_chave = ['ReadingTimeUTC', 'PointID', 'Level', 'Units']
+colunas_chave = ['ReadingTimeUTC', 'PointID', 'Level']
 
 # Se a aba está vazia ou não tem as colunas necessárias → cria cabeçalho
 if df_existente.empty or not all(col in df_existente.columns for col in colunas_chave):
