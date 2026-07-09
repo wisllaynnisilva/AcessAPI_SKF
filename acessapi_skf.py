@@ -413,6 +413,8 @@ if __name__ == "__main__":
 
 """# **PLANILHA TREND MEASUREMENTS**"""
 
+from gspread_dataframe import get_as_dataframe, set_with_dataframe
+
 # Nome da planilha
 planilha_id = "16B1QSbZG-OK8Zs3LiuqG91g_976PcZtmq8kNiVtK4iM"
 nome_da_aba = "Sheet1"
@@ -421,29 +423,87 @@ nome_da_aba = "Sheet1"
 planilha = gc.open_by_key(planilha_id)
 aba = planilha.worksheet(nome_da_aba)
 
-# Lê os dados atuais da aba
-df_existente = get_as_dataframe(aba, evaluate_formulas=True).dropna(how="all")
+# Colunas utilizadas para comparação
+colunas = ["ReadingTimeUTC", "PointID", "Level", "Units"]
 
-# Colunas obrigatórias
-colunas_chave = ['ReadingTimeUTC', 'PointID', 'Level']
+# Garante que o dataframe possui somente essas colunas
+df_trendMeasurements = (
+    df_trendMeasurements[colunas]
+    .drop_duplicates()
+    .reset_index(drop=True)
+)
 
-# Se a aba está vazia ou não tem as colunas necessárias → cria cabeçalho
-if df_existente.empty or not all(col in df_existente.columns for col in colunas_chave):
+# =====================================================================
+# Lê o conteúdo da planilha
+# =====================================================================
+
+valores = aba.get_all_values()
+
+# Planilha vazia
+if len(valores) <= 1:
+
     aba.clear()
-    set_with_dataframe(aba, pd.DataFrame(columns=colunas_chave), row=1, col=1, include_column_header=True)
-    df_existente = pd.DataFrame(columns=colunas_chave)
 
-# Garante que colunas estão no mesmo formato e ordem
-df_existente = df_existente[colunas_chave].dropna()
+    set_with_dataframe(
+        aba,
+        df_trendMeasurements,
+        include_column_header=True,
+        resize=False
+    )
 
-# Remove duplicados e encontra apenas as linhas novas
-df_novos = df_trendMeasurements[~df_trendMeasurements.isin(df_existente.to_dict(orient='list')).all(axis=1)]
+    print(f"Planilha criada com {len(df_trendMeasurements)} registros.")
 
-# Se houver novos registros, adiciona abaixo
-if not df_novos.empty:
-    # Número de linhas já existentes (para inserir a partir da próxima linha vazia)
-    ultima_linha = len(df_existente) + 2  # +1 para header, +1 para próxima
-    set_with_dataframe(aba, df_novos, row=ultima_linha, col=1, include_column_header=False)
-    print(f"{len(df_novos)} novas medições adicionadas à planilha!")
 else:
-    print("Nenhuma medição nova para inserir — tudo já está na planilha.")
+
+    # Converte para DataFrame
+    df_existente = pd.DataFrame(valores[1:], columns=valores[0])
+
+    # Garante mesmas colunas
+    for c in colunas:
+        if c not in df_existente.columns:
+            df_existente[c] = ""
+
+    df_existente = df_existente[colunas]
+
+    # Converte tudo para string para evitar problemas de comparação
+    df_existente = df_existente.astype(str)
+    df_trendMeasurements = df_trendMeasurements.astype(str)
+
+    # Localiza apenas registros novos
+    df_novos = (
+        df_trendMeasurements
+        .merge(
+            df_existente,
+            how="left",
+            indicator=True,
+            on=colunas
+        )
+        .query("_merge == 'left_only'")
+        .drop(columns="_merge")
+    )
+
+    if df_novos.empty:
+
+        print("Nenhuma medição nova encontrada.")
+
+    else:
+
+        ultima_linha = len(valores) + 1
+
+        set_with_dataframe(
+            aba,
+            df_novos,
+            row=ultima_linha,
+            col=1,
+            include_column_header=False,
+            resize=False
+        )
+
+        print(f"{len(df_novos)} novas medições adicionadas.")
+        print(f"Gravadas a partir da linha {ultima_linha}.")
+
+# =====================================================================
+# Conferência
+# =====================================================================
+
+print(f"Total de linhas na planilha: {len(aba.get_all_values())}")
